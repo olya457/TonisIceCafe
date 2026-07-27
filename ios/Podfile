@@ -31,5 +31,18 @@ target 'TonisIceCafe' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    fmt_target = installer.pods_project.targets.find { |target| target.name == 'fmt' }
+    fmt_target&.build_configurations&.each do |build_configuration|
+      build_configuration.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+    end
+
+    fmt_base_header = File.join(installer.sandbox.root.to_s, 'fmt', 'include', 'fmt', 'base.h')
+    if File.exist?(fmt_base_header)
+      fmt_header_contents = File.read(fmt_base_header)
+      fmt_header_contents.gsub!('#  define FMT_USE_CONSTEVAL 1', '#  define FMT_USE_CONSTEVAL 0')
+      File.chmod(0644, fmt_base_header)
+      File.write(fmt_base_header, fmt_header_contents)
+    end
   end
 end
